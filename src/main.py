@@ -3,7 +3,7 @@ import sys
 # DON'T CHANGE THIS !!!
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
-from flask import Flask, send_from_directory
+from flask import Flask, send_from_directory, send_file
 from flask_cors import CORS
 from src.models.user import db
 from src.models.strain import Strain
@@ -14,8 +14,15 @@ from src.routes.strain import strain_bp
 from src.routes.family_tree import family_tree_bp
 # from src.routes.pdf_export import pdf_bp
 
-app = Flask(__name__, static_folder=os.path.join(os.path.dirname(__file__), 'static'))
+app = Flask(__name__)
 app.config['SECRET_KEY'] = 'asdf#FGSgvasgf$5$WGT'
+
+# ADD MIME TYPE CONFIGURATION HERE
+app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
+app.config['MIME_TYPES'] = {
+    '.js': 'application/javascript',
+    '.css': 'text/css'
+}
 
 # Disable strict slashes to handle URLs with/without trailing slashes
 app.url_map.strict_slashes = False
@@ -71,45 +78,31 @@ with app.app_context():
 def test_api():
     return {'message': 'API is working'}, 200
 
-@app.route('/')
-def serve_index():
-    static_folder_path = app.static_folder
-    if static_folder_path is None:
-        return "Static folder not configured", 404
-    
-    index_path = os.path.join(static_folder_path, 'index.html')
-    if os.path.exists(index_path):
-        return send_from_directory(static_folder_path, 'index.html')
+# Serve JavaScript files with correct MIME type
+@app.route('/assets/<path:filename>')
+def serve_assets(filename):
+    file_path = os.path.join('dist/assets', filename)
+    if filename.endswith('.js'):
+        return send_file(file_path, mimetype='application/javascript')
+    elif filename.endswith('.css'):
+        return send_file(file_path, mimetype='text/css')
     else:
-        return "index.html not found", 404
+        return send_from_directory('dist/assets', filename)
 
-@app.route('/<path:path>')
-def serve_spa(path):
-    # Serve static files if they exist
-    static_folder_path = app.static_folder
-    if static_folder_path and os.path.exists(os.path.join(static_folder_path, path)):
-        return send_from_directory(static_folder_path, path)
-    
-    # For SPA routing, serve index.html for non-API routes
-    if not path.startswith('api/'):
-        index_path = os.path.join(static_folder_path, 'index.html')
-        if os.path.exists(index_path):
-            return send_from_directory(static_folder_path, 'index.html')
-    
-    return "Not found", 404
-
-if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port, debug=False)
-
-from flask import send_from_directory
-import os
-
-# Add this route to serve React app
+# Serve React app - REPLACE ALL PREVIOUS ROUTE DEFINITIONS
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
 def serve(path):
+    # Don't interfere with API routes
+    if path.startswith('api/'):
+        return "Not found", 404
+    
+    # Serve static files if they exist
     if path != "" and os.path.exists(os.path.join('dist', path)):
         return send_from_directory('dist', path)
     else:
         return send_from_directory('dist', 'index.html')
+
+if __name__ == '__main__':
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port, debug=False)
