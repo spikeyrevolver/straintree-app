@@ -81,15 +81,15 @@ def test_api():
 # Serve JavaScript files with correct MIME type
 @app.route('/assets/<path:filename>')
 def serve_assets(filename):
-    file_path = os.path.join('dist/assets', filename)
+    file_path = os.path.join('src/static/assets', filename)
     if filename.endswith('.js'):
         return send_file(file_path, mimetype='application/javascript')
     elif filename.endswith('.css'):
         return send_file(file_path, mimetype='text/css')
     else:
-        return send_from_directory('dist/assets', filename)
+        return send_from_directory('src/static/assets', filename)
 
-# Serve React app - REPLACE ALL PREVIOUS ROUTE DEFINITIONS
+# Serve React app - SINGLE ROUTE DEFINITION
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
 def serve(path):
@@ -98,27 +98,11 @@ def serve(path):
         return "Not found", 404
     
     # Serve static files if they exist
-    if path != "" and os.path.exists(os.path.join('dist', path)):
-        return send_from_directory('dist', path)
+    if path != "" and os.path.exists(os.path.join('src/static', path)):
+        return send_from_directory('src/static', path)
     else:
-        return send_from_directory('dist', 'index.html')
+        return send_from_directory('src/static', 'index.html')
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=False)
-
-@app.route('/')
-def serve_index():
-    return send_from_directory('src/static', 'index.html')
-
-@app.route('/<path:path>')
-def serve_spa(path):
-    # Serve static files if they exist
-    if os.path.exists(os.path.join('src/static', path)):
-        return send_from_directory('src/static', path)
-    
-    # For SPA routing, serve index.html for non-API routes
-    if not path.startswith('api/'):
-        return send_from_directory('src/static', 'index.html')
-    
-    return "Not found", 404
