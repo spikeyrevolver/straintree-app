@@ -5,6 +5,20 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>StrainTree - Cannabis Genetics Tracker</title>
+    <!-- Force HTTPS for all API calls -->
+    <script>
+      // Override any HTTP URLs to HTTPS
+      const originalFetch = window.fetch;
+      window.fetch = function(url, options) {
+        if (typeof url === 'string' && url.includes('straintree-app.onrender.com')) {
+          url = url.replace('http://', 'https://');
+          if (!url.startsWith('https://')) {
+            url = 'https://' + url.replace(/^https?:\/\//, '');
+          }
+        }
+        return originalFetch(url, options);
+      };
+    </script>
     <script type="module" crossorigin src="/assets/index-CnzGdjTe.js"></script>
     <link rel="stylesheet" crossorigin href="/assets/index-B81PIVUZ.css">
   </head>
