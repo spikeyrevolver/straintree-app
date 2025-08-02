@@ -27,4 +27,4 @@ def get_family_trees():
             FamilyTree.updated_at.desc()
         ).paginate(page=page, per_page=per_page, error_out=False)
         
-        f
+        
