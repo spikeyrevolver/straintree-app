@@ -13,6 +13,15 @@ def require_auth():
         return None
     return User.query.get(user_id)
 
+def safe_float(value):
+    """Safely convert value to float, returning None for empty/invalid values"""
+    if value == '' or value is None:
+        return None
+    try:
+        return float(value)
+    except (ValueError, TypeError):
+        return None
+
 @strain_bp.route('/', methods=['GET'])
 def get_strains():
     try:
@@ -90,12 +99,16 @@ def create_strain():
         if existing:
             return jsonify({'error': 'Strain with this name already exists'}), 400
         
+        # Safely convert numeric fields
+        thc_content = safe_float(data.get('thc_content'))
+        cbd_content = safe_float(data.get('cbd_content'))
+        
         strain = Strain(
             name=name,
             description=data.get('description', '').strip(),
             strain_type=data.get('strain_type', '').strip(),
-            thc_content=data.get('thc_content'),
-            cbd_content=data.get('cbd_content'),
+            thc_content=thc_content,
+            cbd_content=cbd_content,
             flowering_time=data.get('flowering_time', '').strip(),
             yield_info=data.get('yield_info', '').strip(),
             created_by=user.id
@@ -194,9 +207,9 @@ def update_strain(strain_id):
         if 'strain_type' in data:
             strain.strain_type = data['strain_type'].strip()
         if 'thc_content' in data:
-            strain.thc_content = data['thc_content']
+            strain.thc_content = safe_float(data['thc_content'])
         if 'cbd_content' in data:
-            strain.cbd_content = data['cbd_content']
+            strain.cbd_content = safe_float(data['cbd_content'])
         if 'flowering_time' in data:
             strain.flowering_time = data['flowering_time'].strip()
         if 'yield_info' in data:
@@ -241,8 +254,8 @@ def submit_lab_verification(strain_id):
         strain.lab_test_date = datetime.strptime(data['lab_test_date'], '%Y-%m-%d').date() if data.get('lab_test_date') else None
         strain.lab_report_url = data.get('lab_report_url', '').strip()
         strain.lab_certificate_number = data.get('lab_certificate_number', '').strip()
-        strain.verified_thc = data.get('verified_thc')
-        strain.verified_cbd = data.get('verified_cbd')
+        strain.verified_thc = safe_float(data.get('verified_thc'))
+        strain.verified_cbd = safe_float(data.get('verified_cbd'))
         strain.verified_terpenes = data.get('verified_terpenes', '').strip()
         strain.verification_notes = data.get('verification_notes', '').strip()
         
@@ -355,4 +368,3 @@ def get_verified_strains():
         
     except Exception as e:
         return jsonify({'error': 'Failed to fetch verified strains'}), 500
-
