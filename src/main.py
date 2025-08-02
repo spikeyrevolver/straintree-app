@@ -1,5 +1,5 @@
 import os
-import sys 
+import sys
 # DON'T CHANGE THIS !!!
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
@@ -70,7 +70,6 @@ def test_api():
 @app.route('/')
 def home():
     return """
-    <!DOCTYPE html>
     <html>
     <head>
         <title>StrainTree API</title>
@@ -83,8 +82,8 @@ def home():
     </head>
     <body>
         <div class="container">
-            <h1>�� StrainTree API</h1>
-            <p class="status">✅ Backend is running successfully!</p>
+            <h1>StrainTree API</h1>
+            <p class="status">Backend is running successfully!</p>
             
             <h2>Available Endpoints:</h2>
             <div class="endpoint">
