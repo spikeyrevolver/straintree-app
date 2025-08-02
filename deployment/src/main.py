@@ -26,28 +26,6 @@ app.config['SESSION_COOKIE_SAMESITE'] = None  # More permissive for cross-origin
 app.config['SESSION_COOKIE_DOMAIN'] = None  # Allow any domain
 app.config['SESSION_COOKIE_PATH'] = '/'
 app.config['PERMANENT_SESSION_LIFETIME'] = 86400  # 24 hours
-from flask import send_from_directory
-import os
-
-# Add these routes after your existing routes:
-
-@app.route('/')
-def serve_frontend():
-    return send_from_directory('../frontend/dist', 'index.html')
-
-@app.route('/<path:path>')
-def serve_static(path):
-    # Handle static assets (CSS, JS, images)
-    if os.path.exists(f'../frontend/dist/{path}'):
-        return send_from_directory('../frontend/dist', path)
-    # Handle React Router routes - serve index.html for all other routes
-    return send_from_directory('../frontend/dist', 'index.html')
-
-# Add this route for API calls to avoid conflicts
-@app.route('/api/<path:path>')
-def api_routes(path):
-    # Your existing API routes will handle this
-    pass
 
 # Add session refresh middleware
 @app.before_request
