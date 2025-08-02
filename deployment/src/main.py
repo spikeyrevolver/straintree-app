@@ -14,7 +14,7 @@ from src.routes.strain import strain_bp
 from src.routes.family_tree import family_tree_bp
 # from src.routes.pdf_export import pdf_bp
 
-app = Flask(__name__, static_folder=os.path.join(os.path.dirname(__file__), 'static'))
+app = Flask(__name__)
 app.config['SECRET_KEY'] = 'asdf#FGSgvasgf$5$WGT'
 
 # More robust session configuration for deployment
@@ -66,35 +66,47 @@ with app.app_context():
 def test_api():
     return {'message': 'API is working'}, 200
 
+# Simple backend homepage
 @app.route('/')
-def serve_index():
-    static_folder_path = app.static_folder
-    if static_folder_path is None:
-        return "Static folder not configured", 404
-    
-    index_path = os.path.join(static_folder_path, 'index.html')
-    if os.path.exists(index_path):
-        return send_from_directory(static_folder_path, 'index.html')
-    else:
-        return "index.html not found", 404
-
-@app.route('/<path:path>')
-def serve_spa(path):
-    # Serve static files if they exist
-    static_folder_path = app.static_folder
-    if static_folder_path and os.path.exists(os.path.join(static_folder_path, path)):
-        return send_from_directory(static_folder_path, path)
-    
-    # For SPA routing, serve index.html for non-API routes
-    if not path.startswith('api/'):
-        index_path = os.path.join(static_folder_path, 'index.html')
-        if os.path.exists(index_path):
-            return send_from_directory(static_folder_path, 'index.html')
-    
-    return "Not found", 404
-
+def home():
+    return """
+    <html>
+    <head>
+        <title>StrainTree API</title>
+        <style>
+            body { font-family: Arial, sans-serif; margin: 40px; }
+            .container { max-width: 800px; margin: 0 auto; }
+            .endpoint { background: #f5f5f5; padding: 10px; margin: 10px 0; border-radius: 5px; }
+            .status { color: green; font-weight: bold; }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>StrainTree API</h1>
+            <p class="status">Backend is running successfully!</p>
+            
+            <h2>Available Endpoints:</h2>
+            <div class="endpoint">
+                <strong>Authentication:</strong> /api/auth/login, /api/auth/register, /api/auth/logout
+            </div>
+            <div class="endpoint">
+                <strong>Users:</strong> /api/users
+            </div>
+            <div class="endpoint">
+                <strong>Strains:</strong> /api/strains
+            </div>
+            <div class="endpoint">
+                <strong>Family Trees:</strong> /api/family-trees
+            </div>
+            
+            <h2>Test API:</h2>
+            <p><a href="/api/test">Test API Endpoint</a></p>
+            <p><a href="/api/auth/check">Check Authentication</a></p>
+        </div>
+    </body>
+    </html>
+    """
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=False)
-
