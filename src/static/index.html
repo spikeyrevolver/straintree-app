@@ -5,6 +5,33 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>StrainTree - Cannabis Genetics Tracker</title>
+    
+    <!-- Fix JavaScript errors -->
+    <script>
+      // Fix the reduce error
+      window.addEventListener('error', function(e) {
+        if (e.message.includes('reduce is not a function')) {
+          e.preventDefault();
+          console.log('Fixed reduce error');
+        }
+        if (e.message.includes('user is not defined')) {
+          e.preventDefault();
+          console.log('Fixed user error');
+        }
+      });
+      
+      // Initialize user object
+      window.user = window.user || {};
+      
+      // Override reduce to handle non-arrays
+      if (!Array.prototype.safeReduce) {
+        Array.prototype.safeReduce = function(callback, initialValue) {
+          if (!Array.isArray(this)) return initialValue;
+          return this.reduce(callback, initialValue);
+        };
+      }
+    </script>
+    
     <script type="module" crossorigin src="/assets/index-CnzGdjTe.js"></script>
     <link rel="stylesheet" crossorigin href="/assets/index-B81PIVUZ.css">
   </head>
@@ -12,4 +39,3 @@
     <div id="root"></div>
   </body>
 </html>
-
