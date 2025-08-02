@@ -5,22 +5,46 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>StrainTree - Cannabis Genetics Tracker</title>
-    <!-- Force HTTPS for all API calls -->
+    <!-- Force HTTPS for all API calls and prevent caching -->
     <script>
-      // Override any HTTP URLs to HTTPS
+      // Aggressive HTTPS enforcement
       const originalFetch = window.fetch;
       window.fetch = function(url, options) {
-        if (typeof url === 'string' && url.includes('straintree-app.onrender.com')) {
-          url = url.replace('http://', 'https://');
-          if (!url.startsWith('https://')) {
-            url = 'https://' + url.replace(/^https?:\/\//, '');
+        if (typeof url === 'string') {
+          // Force HTTPS for any straintree URLs
+          if (url.includes('straintree-app.onrender.com')) {
+            url = url.replace('http://', 'https://');
+            if (!url.startsWith('https://')) {
+              url = 'https://' + url.replace(/^https?:\/\//, '');
+            }
+          }
+          // Force HTTPS for any relative URLs that might be constructed as HTTP
+          if (url.startsWith('/api/')) {
+            url = 'https://straintree-app.onrender.com' + url;
           }
         }
         return originalFetch(url, options);
       };
+      
+      // Also override XMLHttpRequest
+      const originalXHROpen = XMLHttpRequest.prototype.open;
+      XMLHttpRequest.prototype.open = function(method, url, ...args) {
+        if (typeof url === 'string') {
+          if (url.includes('straintree-app.onrender.com')) {
+            url = url.replace('http://', 'https://');
+            if (!url.startsWith('https://')) {
+              url = 'https://' + url.replace(/^https?:\/\//, '');
+            }
+          }
+          if (url.startsWith('/api/')) {
+            url = 'https://straintree-app.onrender.com' + url;
+          }
+        }
+        return originalXHROpen.call(this, method, url, ...args);
+      };
     </script>
-    <script type="module" crossorigin src="/assets/index-CnzGdjTe.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-B81PIVUZ.css">
+    <script type="module" crossorigin src="/assets/index-CnzGdjTe.js?v=2"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-B81PIVUZ.css?v=2">
   </head>
   <body>
     <div id="root"></div>
