@@ -17,6 +17,9 @@ from src.routes.family_tree import family_tree_bp
 app = Flask(__name__, static_folder=os.path.join(os.path.dirname(__file__), 'static'))
 app.config['SECRET_KEY'] = 'asdf#FGSgvasgf$5$WGT'
 
+# Disable strict slashes to handle URLs with/without trailing slashes
+app.url_map.strict_slashes = False
+
 # More robust session configuration for deployment
 app.config['SESSION_PERMANENT'] = False
 app.config['SESSION_COOKIE_NAME'] = 'straintree_session'
@@ -97,4 +100,4 @@ def serve_spa(path):
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port
+    app.run(host='0.0.0.0', port=port, debug=False)
