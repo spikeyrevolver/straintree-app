@@ -106,3 +106,19 @@ def serve(path):
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=False)
+
+@app.route('/')
+def serve_index():
+    return send_from_directory('src/static', 'index.html')
+
+@app.route('/<path:path>')
+def serve_spa(path):
+    # Serve static files if they exist
+    if os.path.exists(os.path.join('src/static', path)):
+        return send_from_directory('src/static', path)
+    
+    # For SPA routing, serve index.html for non-API routes
+    if not path.startswith('api/'):
+        return send_from_directory('src/static', 'index.html')
+    
+    return "Not found", 404
