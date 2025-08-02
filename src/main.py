@@ -33,13 +33,15 @@ def refresh_session():
     from flask import session
     session.permanent = True
 
-# Enable CORS for all routes with credentials support
+# Enhanced CORS configuration for frontend-backend communication
 CORS(app, 
      supports_credentials=True, 
-     origins=['*'],
-     allow_headers=['Content-Type', 'Authorization', 'Cookie', 'Set-Cookie'],
-     expose_headers=['Set-Cookie'],
-     methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'])
+     origins=['https://straintree-app.onrender.com', 'http://localhost:3000', 'http://localhost:5000', '*'],
+     allow_headers=['Content-Type', 'Authorization', 'Cookie', 'Set-Cookie', 'X-Requested-With', 'Accept'],
+     expose_headers=['Set-Cookie', 'Content-Type'],
+     methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+     allow_credentials=True,
+     max_age=3600)
 
 # Database configuration
 app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{os.path.join(os.path.dirname(__file__), 'database', 'app.db')}"
@@ -93,8 +95,6 @@ def serve_spa(path):
     
     return "Not found", 404
 
-
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port, debug=False)
-
+    app.run(host='0.0.0.0', port
