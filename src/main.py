@@ -34,4 +34,58 @@ app.config['SESSION_COOKIE_HTTPONLY'] = False
 app.config['SESSION_COOKIE_SECURE'] = False
 app.config['SESSION_COOKIE_SAMESITE'] = None  # More permissive for cross-origin
 app.config['SESSION_COOKIE_DOMAIN'] = None  # Allow any domain
-app.config['SESSION_COO
+app.config['SESSION_COOKIE_PATH'] = '/'
+app.config['PERMANENT_SESSION_LIFETIME'] = 86400  # 24 hours
+
+# Add session refresh middleware
+@app.before_request
+def refresh_session():
+    from flask import session
+    session.permanent = True
+
+# Enhanced CORS configuration for frontend-backend communication
+CORS(app, 
+     supports_credentials=True, 
+     origins=['https://straintree-app.onrender.com', 'http://localhost:3000', 'http://localhost:5000', '*'],
+     allow_headers=['Content-Type', 'Authorization', 'Cookie', 'Set-Cookie', 'X-Requested-With', 'Accept'],
+     expose_headers=['Set-Cookie', 'Content-Type'],
+     methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+     allow_credentials=True,
+     max_age=3600)
+
+# Database configuration
+app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{os.path.join(os.path.dirname(__file__), 'database', 'app.db')}"
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db.init_app(app)
+
+# Register blueprints BEFORE any other routes
+app.register_blueprint(auth_bp, url_prefix='/api/auth')
+app.register_blueprint(user_bp, url_prefix='/api')
+app.register_blueprint(strain_bp, url_prefix='/api/strains')
+app.register_blueprint(family_tree_bp, url_prefix='/api/family-trees')
+# app.register_blueprint(pdf_bp)
+
+# Debug: Print all registered routes
+print("Registered routes:")
+for rule in app.url_map.iter_rules():
+    print(f"  {rule.rule} -> {rule.endpoint} [{', '.join(rule.methods)}]")
+
+with app.app_context():
+    db.create_all()
+
+# Add a test route to verify API is working
+@app.route('/api/test')
+def test_api():
+    return {'message': 'API is working'}, 200
+
+# Debug route to check what files exist
+@app.route('/debug/files')
+def debug_files():
+    import os
+    files = []
+    for root, dirs, filenames in os.walk('src/static'):
+        for filename in filenames:
+            files.append(os.path.join(root, filename))
+    return {'files': files}
+
+# Serve JavaScript files wit
